@@ -28,10 +28,16 @@ async function run() {
   try {
     const roomsCollection = client.db("WanderInn").collection("rooms");
     const offersCollection = client.db("WanderInn").collection("Offers");
+    const testimonialsCollection = client.db("WanderInn").collection("testimonials");
 
     
    app.get('/offers',async (req,res)=>{
       const data =  offersCollection.find();
+      const result=await data.toArray()
+      res.send(result)
+    })
+   app.get('/testimonials',async (req,res)=>{
+      const data =  testimonialsCollection.find();
       const result=await data.toArray()
       res.send(result)
     })
