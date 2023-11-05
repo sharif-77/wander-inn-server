@@ -1,14 +1,37 @@
 const express = require('express')
 require("dotenv").config();
 const cookieParser = require('cookie-parser')
-var cors = require('cors')
+const cors = require('cors')
+const jwt = require('jsonwebtoken');
 const app = express()
 const port = process.env.PORT || 5000
 
-app.use(cors())
+app.use(cors({
+  origin:['http://localhost:5173'],
+  credentials:true
+}))
 app.use(express.json());
-
 app.use(cookieParser())
+
+
+const verifyToken = (req, res, next) => {
+  const token = req.cookies.token
+  // console.log(token);
+  if (!token) {
+    return res.send({message:'User UnAuthorized first',error:true});
+  }
+
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (error, decoded) => {
+    if (error) {
+      console.log(error);
+      return res.send({message:'User UnAuthorized second',error:true});
+    }
+    req.decoded = decoded;
+    console.log(decoded);
+
+    next();
+  });
+};
 
 
 
@@ -41,13 +64,20 @@ async function run() {
       const result=await data.toArray()
       res.send(result)
     })
+    app.post('/jwt',async(req,res)=>{
+      const email=req.body
+      const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET,{
+        expiresIn: "1h",
+      })
+      res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: false,
+      })
+      .send(token);
 
-
-
-
-
-
-
+      console.log(email,token);
+    })
 
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
