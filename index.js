@@ -64,6 +64,11 @@ async function run() {
       const result=await data.toArray()
       res.send(result)
     })
+   app.get('/rooms',async (req,res)=>{
+      const data =  roomsCollection.find();
+      const result=await data.toArray()
+      res.send(result)
+    })
     app.post('/jwt',async(req,res)=>{
       const email=req.body
       const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET,{
