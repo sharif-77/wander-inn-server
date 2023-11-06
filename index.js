@@ -65,8 +65,9 @@ async function run() {
       res.send(result)
     })
    app.get('/rooms',async (req,res)=>{
+    const sortOrder = req.query.order === 'desc' ? -1 : 1;
       const data =  roomsCollection.find();
-      const result=await data.toArray()
+      const result=await data.sort({ price: sortOrder }).toArray()
       res.send(result)
     })
     app.post('/jwt',async(req,res)=>{
