@@ -70,6 +70,14 @@ async function run() {
       const result=await data.sort({ price: sortOrder }).toArray()
       res.send(result)
     })
+    app.get('/room/:id',async (req,res)=>{
+      const id=req.params.id
+      console.log(id);
+      const query = { _id: new ObjectId(id) };
+      const result = await roomsCollection.findOne(query);
+      res.send(result)
+
+    })
     app.post('/jwt',async(req,res)=>{
       const email=req.body
       const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET,{
@@ -82,7 +90,6 @@ async function run() {
       })
       .send(token);
 
-      console.log(email,token);
     })
 
     // Connect the client to the server	(optional starting in v4.7)
