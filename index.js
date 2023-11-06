@@ -50,6 +50,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const roomsCollection = client.db("WanderInn").collection("rooms");
+    const myBookingsCollection = client.db("WanderInn").collection("myBookings");
     const offersCollection = client.db("WanderInn").collection("Offers");
     const testimonialsCollection = client.db("WanderInn").collection("testimonials");
 
@@ -78,6 +79,11 @@ async function run() {
       res.send(result)
 
     })
+    app.post('/bookings',async (req,res)=>{
+      const data=req.body;
+      const result = await myBookingsCollection.insertOne(data);
+      res.send(result)
+   })
     app.post('/jwt',async(req,res)=>{
       const email=req.body
       const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET,{
