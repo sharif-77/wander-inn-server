@@ -157,6 +157,16 @@ async function run() {
 
   // review
 
+  app.get('/reviews',async (req,res)=>{
+    const serviceName=req.query.serviceName
+    console.log(serviceName);
+    const query = { 
+      serviceName: serviceName };
+    const data =  reviewsCollection.find(query);
+    const result=await data.toArray()
+    res.send(result)
+  })
+
   app.post('/review',async (req,res)=>{
     const data=req.body;
     const result = await reviewsCollection.insertOne(data);
