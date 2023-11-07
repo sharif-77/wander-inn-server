@@ -16,7 +16,6 @@ app.use(cookieParser())
 
 const verifyToken = (req, res, next) => {
   const token = req.cookies.token
-  // console.log(token);
   if (!token) {
     return res.send({message:'User UnAuthorized first',error:true});
   }
@@ -27,8 +26,6 @@ const verifyToken = (req, res, next) => {
       return res.send({message:'User UnAuthorized second',error:true});
     }
     req.decoded = decoded;
-    console.log(decoded);
-
     next();
   });
 };
@@ -50,6 +47,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     const roomsCollection = client.db("WanderInn").collection("rooms");
+    const reviewsCollection = client.db("WanderInn").collection("reviews");
     const myBookingsCollection = client.db("WanderInn").collection("myBookings");
     const offersCollection = client.db("WanderInn").collection("Offers");
     const testimonialsCollection = client.db("WanderInn").collection("testimonials");
@@ -73,17 +71,98 @@ async function run() {
     })
     app.get('/room/:id',async (req,res)=>{
       const id=req.params.id
-      console.log(id);
       const query = { _id: new ObjectId(id) };
       const result = await roomsCollection.findOne(query);
       res.send(result)
 
+    })
+
+
+    app.put('/rooms/:id',async (req,res)=>{
+      const id=req.params.id;
+      const dataForUpdate=req.body;
+      const {availability}=dataForUpdate;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          availability
+        },
+      };
+      const result = await roomsCollection.updateOne(filter, updateDoc, options);
+      res.send(result)
+    })
+
+
+    app.get('/bookings',verifyToken,async (req,res)=>{
+      const decodedEmail=req.decoded.email
+      const email=req.query.email;
+      if (email !== decodedEmail) {
+        return
+      }
+      const query={email:email}
+      const data =  myBookingsCollection.find(query);
+      const result=await data.toArray()
+      res.send(result)
     })
     app.post('/bookings',async (req,res)=>{
       const data=req.body;
       const result = await myBookingsCollection.insertOne(data);
       res.send(result)
    })
+   app.put('/status/:id',async (req,res)=>{
+    const id=req.params.id;
+    const dataForUpdate=req.body;
+    console.log(id);
+    console.log(dataForUpdate);
+    const {status}=dataForUpdate;
+    console.log(status);
+    const filter = { _id: new ObjectId(id) };
+    const options = { upsert: true };
+    const updateDoc = {
+      $set: {
+        status:status,
+      },
+    };
+    const result = await myBookingsCollection.updateOne(filter, updateDoc, options);
+    res.send(result)
+  })
+   app.put('/updateDate/:id',async (req,res)=>{
+    const id=req.params.id;
+    const dataForUpdate=req.body;
+    console.log(id);
+    console.log(dataForUpdate);
+    const {date}=dataForUpdate;
+    console.log(date);
+    const filter = { _id: new ObjectId(id) };
+    const options = { upsert: true };
+    const updateDoc = {
+      $set: { 
+        startDate:date
+
+      },
+    };
+    const result = await myBookingsCollection.updateOne(filter, updateDoc, options);
+    res.send(result)
+  })
+
+
+
+  app.delete('/bookings/:id',async (req,res)=>{
+    const id=req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const result = await myBookingsCollection.deleteOne(query);
+    res.send(result)
+  })
+
+  // review
+
+  app.post('/review',async (req,res)=>{
+    const data=req.body;
+    const result = await reviewsCollection.insertOne(data);
+    res.send(result)
+ })
+
     app.post('/jwt',async(req,res)=>{
       const email=req.body
       const token = jwt.sign(email, process.env.ACCESS_TOKEN_SECRET,{
